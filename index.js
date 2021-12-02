@@ -1,51 +1,51 @@
 
-
-
 // Using the library - like importing in python 
 const express = require("express");
-const dataBaseHandler = require('./databaseHandler'); 
-
 // launching the app 
 const app = express(); 
+
+app.use(express.json());
+const client = require("./db");
+client.connect(); 
 
 // Setting up the port 
 let port = process.env.PORT || 3000; 
 
-// calling the app on the above port 
-app.listen(port, ()=>{
-    console.log("Server is running on port " + port); 
-}); 
-
-// what the user sees, the home page
-app.get("/", (req,res)=>{
-    res.send("Hello this is from port"); 
+app.get("/sum",(req, response)=>{
+    const select_query = {
+        name: 'fetch-numbers',
+        text: 'SELECT SUM(number) FROM user_numbers'
+    }
+    client.query(select_query).then(res => {
+        sum = res.rows[0].sum;
+        response.send({sum});
+    }).catch(e => console.log(e.stack));
+   
 })
+app.post("/sum", (request, response)=>{
+    const numberFromURL = request.body.number;
+    // get the number from the request
+    const insert_query = {
+        name: 'insert-number',
+        text: `INSERT INTO user_numbers(number) VALUES(${Number(numberFromURL)})`,
+    }
+    client.query(insert_query).then(res => {
+        console.log("ADDED"); 
+    }).catch(e => console.log(e.stack));
 
-app.get("/sum", (req,res)=>{
-    console.log(req.query); 
+    const select_query = {
+        name: 'fetch-numbers',
+        text: 'SELECT SUM(number) FROM user_numbers'
+    }
+    client.query(select_query).then(res => {
+        sum = res.rows[0].sum;
+        response.json({"sum": sum});
+    }).catch(e => console.log(e.stack));
     
-    // get the number that they passed 
-    const numFromURL = req.query?.num; 
-
-    // check to see if a number was passed 
-    if(isNaN(numFromURL)){
-        res.send("You need to input an integer")
-        return; 
-    }
-
-    if(numFromURL){
-        dataBaseHandler.setNum(numFromURL); 
-        const sum = dataBaseHandler.getSum(); 
-        res.send(`Your number is ${numFromURL} and the sum is ${sum}`); 
-    } else { 
-        res.send("Please input a valid number")
-    }
-
-    // save the number to the postgress data base 
-
-    // set data in postgress 
-
-    // get the data from postgress 
-
-    // return the sum of numbers in database 
+    
 })
+
+
+app.listen(port, ()=>{
+    console.log('Server is running on port ' + port);
+}); 
