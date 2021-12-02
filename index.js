@@ -27,7 +27,7 @@ app.post("/sum", (request, response)=>{
     // get the number from the request
     const insert_query = {
         name: 'insert-number',
-        text: `INSERT INTO u1ser_numbers(number) VALUES(${Number(numberFromURL)})`,
+        text: `INSERT INTO user_numbers(number) VALUES(${Number(numberFromURL)})`,
     }
     client.query(insert_query).then(res => {
         console.log("ADDED"); 
